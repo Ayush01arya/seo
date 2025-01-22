@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competitor Analysis Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Competitor Analysis Dashboard</h1>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form id="analysisForm" class="flex gap-4">
+                <input type="url" id="urlInput" required
+                       class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       placeholder="Enter competitor URL">
+                <button type="submit"
+                        class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
+                    Analyze
+                </button>
+            </form>
+        </div>
+
+        <div id="loading" class="hidden">
+            <div class="flex items-center justify-center p-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+        </div>
+
+        <div id="results" class="hidden">
+            <!-- Overview Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-gray-500 text-sm">Domain Authority</h3>
+                    <p id="domainAuthority" class="text-2xl font-bold"></p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-gray-500 text-sm">Total Backlinks</h3>
+                    <p id="totalBacklinks" class="text-2xl font-bold"></p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-gray-500 text-sm">Keywords</h3>
+                    <p id="totalKeywords" class="text-2xl font-bold"></p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-gray-500 text-sm">Load Time</h3>
+                    <p id="loadTime" class="text-2xl font-bold"></p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">Traffic Sources</h2>
+                    <canvas id="trafficSourcesChart"></canvas>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">Content Distribution</h2>
+                    <canvas id="contentDistributionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">Monthly Traffic Trend</h2>
+                    <canvas id="trafficTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- SEO Analysis -->
+            <!-- Add this to the results div in your HTML -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">SEO Analysis</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Meta Information -->
+        <div class="space-y-4">
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h3 class="font-semibold text-gray-700 mb-2">Meta Title</h3>
+                <p id="metaTitle" class="text-gray-600"></p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h3 class="font-semibold text-gray-700 mb-2">Meta Description</h3>
+                <p id="metaDescription" class="text-gray-600"></p>
+            </div>
+        </div>
+
+        <!-- SEO Metrics -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600">H1 Tags</p>
+                <p id="h1Count" class="text-xl font-bold"></p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600">H2 Tags</p>
+                <p id="h2Count" class="text-xl font-bold"></p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600">Images with Alt</p>
+                <p id="imgAltCount" class="text-xl font-bold"></p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600">Internal Links</p>
+                <p id="internalLinksCount" class="text-xl font-bold"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEO Score Chart -->
+    <div class="mt-6">
+        <canvas id="seoScoreChart"></canvas>
+    </div>
+</div>
+
+<!-- Add this to your existing JavaScript -->
+
+        </div>
+    </div>
+
+    <script>
+        function initializeCharts(data) {
+            // Traffic Sources Pie Chart
+            new Chart(document.getElementById('trafficSourcesChart'), {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data.trafficSources),
+                    datasets: [{
+                        data: Object.values(data.trafficSources),
+                        backgroundColor: [
+                            '#3B82F6',
+                            '#10B981',
+                            '#F59E0B',
+                            '#EF4444'
+                        ]
+                    }]
+                }
+            });
+
+            // Content Distribution Bar Chart
+            new Chart(document.getElementById('contentDistributionChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data.contentTypes),
+                    datasets: [{
+                        label: 'Content Count',
+                        data: Object.values(data.contentTypes),
+                        backgroundColor: '#3B82F6'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Traffic Trend Line Chart
+            new Chart(document.getElementById('trafficTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: data.trafficTrend.map(item => item.month),
+                    datasets: [{
+                        label: 'Monthly Visitors',
+                        data: data.trafficTrend.map(item => item.visitors),
+                        borderColor: '#3B82F6',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('urlInput').value;
+
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                // Update metrics
+                document.getElementById('domainAuthority').textContent = data.domainAuthority;
+                document.getElementById('totalBacklinks').textContent = data.totalBacklinks.toLocaleString();
+                document.getElementById('totalKeywords').textContent = data.totalKeywords.toLocaleString();
+                document.getElementById('loadTime').textContent = `${data.loadTime}s`;
+
+                // Initialize charts
+                initializeCharts(data);
+
+                // Show results
+                document.getElementById('results').classList.remove('hidden');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        });
+    </script>
+<script>
+// Update the existing event listener
+document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+    // ... existing code ...
+
+    // Add this inside the try block after getting data:
+    document.getElementById('metaTitle').textContent = data.seo_data.meta_title;
+    document.getElementById('metaDescription').textContent = data.seo_data.meta_description;
+    document.getElementById('h1Count').textContent = data.seo_data.h1_tags.length;
+    document.getElementById('h2Count').textContent = data.seo_data.h2_tags.length;
+    document.getElementById('imgAltCount').textContent =
+        `${data.seo_data.img_alt_tags}/${data.seo_data.total_images}`;
+    document.getElementById('internalLinksCount').textContent = data.seo_data.internal_links;
+
+    // Add SEO Score Chart
+    new Chart(document.getElementById('seoScoreChart'), {
+        type: 'radar',
+        data: {
+            labels: ['Title Length', 'Meta Description', 'Image Alt Tags', 'Heading Structure', 'Internal Links'],
+            datasets: [{
+                label: 'SEO Score',
+                data: [
+                    calculateScore(data.seo_data.meta_title.length, 50, 60),
+                    calculateScore(data.seo_data.meta_description.length, 150, 160),
+                    calculateScore(data.seo_data.img_alt_tags / data.seo_data.total_images * 100, 90, 100),
+                    calculateScore(data.seo_data.h1_tags.length, 1, 1),
+                    calculateScore(data.seo_data.internal_links, 10, 20)
+                ],
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: 'rgb(59, 130, 246)',
+                pointBackgroundColor: 'rgb(59, 130, 246)'
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    min: 0,
+                    max: 100
+                }
+            }
+        }
+    });
+});
+
+function calculateScore(value, min, ideal) {
+    if (value >= min && value <= ideal) return 100;
+    if (value < min) return (value / min) * 100;
+    return Math.max(0, 100 - ((value - ideal) / ideal) * 50);
+}
+</script>
+</body>
+</html>
