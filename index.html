@@ -79,7 +79,7 @@
       const url = document.getElementById('url').value;
 
       try {
-        const response = await fetch('http://127.0.0.1:5000/api/competitor-analysis', {
+        const response = await fetch('https://seo-liart-sigma.vercel.app/api/competitor-analysis', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url }),
